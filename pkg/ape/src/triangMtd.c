@@ -249,6 +249,14 @@ void triangMtd(double* dd, int* np, int* ed1,int* ed2, double* edLen)
         nv++;
         //subdivide subdiv with a node labelled nv
         //length calculation
+        //multifurcating vertices
+        if((sw==1 && sum-lx == 0) || (sw==0 && lx-prevSum == 0))
+        {
+            numEdges++;
+            ed1[numEdges]=ed1[subdiv];
+            ed2[numEdges]=z;
+            edLen[numEdges]=minDist;
+        }else{
         int edd=ed2[subdiv];
         ed2[subdiv]=nv;
         edLen[subdiv]= (sw==1)?(lx-prevSum):(sum-lx);//check which 'half' of the
@@ -262,6 +270,7 @@ void triangMtd(double* dd, int* np, int* ed1,int* ed2, double* edLen)
         edLen[numEdges]=minDist;
         ed1[numEdges]=nv;
         ed2[numEdges]=z;
+        }
 
 
 

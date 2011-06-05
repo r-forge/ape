@@ -10,6 +10,7 @@
 nj <- function(X)
 {
     if (is.matrix(X)) X <- as.dist(X)
+    X
     if (any(is.na(X)))
         stop("missing values are not allowed in the distance matrix")
     N <- attr(X, "Size")
