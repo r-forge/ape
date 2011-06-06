@@ -76,29 +76,34 @@ void triangMtd(double* dd, int* np, int* ed1,int* ed2, double* edLen)
     int ij=-1;
 
     double d[n*n];
+    /*for(int i=0;i<(n*(n-1)/2);i++)
+    {Rprintf("dd[%i]=%f ",i,dd[i]);
+    }	
+    Rprintf("\n");*/
+	
     for(i=0;i<n;i++)
     {
-     for(j=0;j<i;j++)
+     for(j=i+1;j<n;j++)
        {ij++;
          d[i*n+j]=dd[ij];
-	 Rprintf("%f ",dd[ij]);
+	 //Rprintf("%f ",dd[ij]);
        }
-     Rprintf("\n"); 	
+     //Rprintf("\n"); 	
     }
 
     for(i=0;i<n;i++)
     {d[i*n+i]=0;
      for(j=i;j<n;j++)
-       {d[i*n+j]=d[j*n+i];
+       {d[j*n+i]=d[i*n+j];
        }
     }
-    for(i=0;i<n;i++)
+    /*for(i=0;i<n;i++)
     {
      for(j=0;j<n;j++)
        {Rprintf("%f ",d[i*n+j]);
        }
      Rprintf("\n");
-    }
+    }*/
 
     double minW=0;
     int x=-1,y=-1,numEdges=0;
@@ -143,7 +148,11 @@ void triangMtd(double* dd, int* np, int* ed1,int* ed2, double* edLen)
       {
         if(w[i]){continue;}
         st[i]=x;ed[i]=y;
+        /*Rprintf("d[i][x]=%f",d[i*n+x]);
+        Rprintf("d[i][y]=%f",d[i*n+y]);
+	Rprintf("d[x][y]=%f",d[x*n+y]);*/
         l[i]=0.5*(d[i*n+x]+d[i*n+y]-d[x*n+y]);//distance of leaf i from the initial tree
+	//Rprintf("distance of leaf %i from tree: %f\n",i,l[i]);
       }
 
 
@@ -175,6 +184,13 @@ void triangMtd(double* dd, int* np, int* ed1,int* ed2, double* edLen)
     edLen[numEdges]=0.5*(d[x3*n+x]+d[x3*n+y]-d[x*n+y]);
     w[x3]=1;
 
+       /* Rprintf("ini triangle\n");
+        for(i=0;i<=numEdges;i++)
+        {
+        Rprintf("%i->%i of length:%f \n",ed1[i],ed2[i],edLen[i]);
+        }
+        Rprintf("end ini triangle\n");*/
+
     //calculate distance of leaves not yet added to the star tree
     int s;
     for(s=0;s<n;s++)
@@ -190,12 +206,13 @@ void triangMtd(double* dd, int* np, int* ed1,int* ed2, double* edLen)
                    ed[s]=x3;
                   }
             }
+	   //Rprintf("new dist of %i is %f\n",s,l[s]);
          }
 
     //partial tree construction begins here
 
     while(wSize<n)
-      { int minDist=1000;
+      { double minDist=1000;
         int z=0;
         int i=0;
         //search for leaf z which is closest to partial tree
@@ -244,12 +261,14 @@ void triangMtd(double* dd, int* np, int* ed1,int* ed2, double* edLen)
               }
 
           }
-
-
+	
+	/*Rprintf("subdividing {%i,%i}\n",ed1[subdiv],ed2[subdiv]);
+	Rprintf("sum=%f, prevSum=%f, lx=%f\n",sum,prevSum,lx);*/
         nv++;
         //subdivide subdiv with a node labelled nv
         //length calculation
         //multifurcating vertices
+	//Rprintf("adding leaf %i on the path %i to %i",z,x,y);
         if((sw==1 && sum-lx == 0) || (sw==0 && lx-prevSum == 0))
         {
             numEdges++;
@@ -259,6 +278,7 @@ void triangMtd(double* dd, int* np, int* ed1,int* ed2, double* edLen)
         }else{
         int edd=ed2[subdiv];
         ed2[subdiv]=nv;
+	//Rprintf("lx-prevsum=%f, sum-lx=%f ",lx-prevSum,sum-lx);
         edLen[subdiv]= (sw==1)?(lx-prevSum):(sum-lx);//check which 'half' of the
                                                      //path the leaf belongs to
                                                      //and updates accordingly
@@ -311,10 +331,11 @@ void triangMtd(double* dd, int* np, int* ed1,int* ed2, double* edLen)
          {if(w[s])continue;
            for(i=0;i<n;i++)
             {
-               if(!w[i])continue;
-               int newL=0.5*(d[i*n+s]+d[z*n+s]-d[i*n+z]);//one of leaves is z, since
+               if(w[i]==0 || i==z)continue;
+               double newL=0.5*(d[i*n+s]+d[z*n+s]-d[i*n+z]);//one of leaves is z, since
                                                       //all pairs not cotaining z
                                                       //will remain unchanged
+	       //Rprintf("newL=%f \n",newL); 
                if(newL<l[s])
                   {
                    l[s]=newL;
@@ -322,14 +343,15 @@ void triangMtd(double* dd, int* np, int* ed1,int* ed2, double* edLen)
                    ed[s]=z;
                   }
             }
+          //Rprintf("new dist of %i is %f, on the path %i to %i\n",s,l[s],st[s],ed[s]);
          }
         free(ord);
-        /*printf("new tree\n");
-        for(i=0;i<2*n-3;i++)
+       /* Rprintf("new tree\n");
+        for(i=0;i<=numEdges;i++)
         {
-        printf("%i->%i of length:%d \n",ed1[i],ed2[i],edLen[i]);
+        Rprintf("%i->%i of length:%f \n",ed1[i],ed2[i],edLen[i]);
         }
-        printf("end new tree\n");*/
+        Rprintf("end new tree\n");*/
       }
    for(i=0;i<=numEdges;i++){ed1[i]++;ed2[i]++;}
  }
