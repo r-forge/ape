@@ -1,3 +1,5 @@
+//include<R.h>
+
 /*
  * leafs labelled 1 to n. root labelled n+1. other nodes labelled n+1 to m
  */
@@ -5,7 +7,7 @@
 #include <R.h>
 
 int give_indexx(int i, int j, int n)
-{
+{       if(i==j)return 0;
 	if (i > j) return(n*(j - 1) - j*(j - 1)/2 + i - j - 1);
 	else return(n*(i - 1) - i*(i - 1)/2 + j - i - 1);
 }

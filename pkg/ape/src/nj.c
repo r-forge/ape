@@ -12,7 +12,7 @@
    see give_index() below */
 
 int give_index(int i, int j, int n)
-{
+{       
 	if (i > j) return(DINDEX(j, i));
 	else return(DINDEX(i, j));
 }
@@ -68,8 +68,7 @@ void nj(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 	S = &Sdist;
 	new_dist = &Ndist;
 	otu_label = &o_l;
-
-	n = *N;
+        n = *N;       	
 	cur_nod = 2*n - 2;
 
 	S = (double*)R_alloc(n + 1, sizeof(double));
@@ -90,7 +89,9 @@ void nj(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 		B = n - 2;
 		for (i = 1; i < n; i++) {
 			for (j = i + 1; j <= n; j++) {
+                                
 				A = B*D[ij] - S[i] - S[j];
+                                //Rprintf("Qxy=%f\n",A);
 				if (A < smallest_S) {
 					OTU1 = i;
 					OTU2 = j;
@@ -100,7 +101,7 @@ void nj(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 				ij++;
 			}
 		}
-
+                //Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
 		edge2[k] = otu_label[OTU1];
 		edge2[k + 1] = otu_label[OTU2];
 		edge1[k] = edge1[k + 1] = cur_nod;
@@ -120,10 +121,14 @@ void nj(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 			ij++;
 		}
 		/* compute the branch lengths */
+                //Rprintf("R[%i,%i]:%f \n",OTU1,OTU2,(S[OTU1]-S[OTU2])/2);
 		B = (S[OTU1] - S[OTU2])/B; /* don't need B anymore */
+                //Rprintf("s[otu1]=%f, s[otu2]=%f \n",S[OTU1],S[OTU2]);
+                //
 		edge_length[k] = (A + B)/2;
+                //Rprintf("l1:%f \n",edge_length[k]);
 		edge_length[k + 1] = (A - B)/2;
-
+                //Rprintf("l2:%f \n",edge_length[k+1]);
 		/* update before the next loop
 		   (we are sure that OTU1 < OTU2) */
 		if (OTU1 != 1)
@@ -159,3 +164,4 @@ void nj(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 	edge_length[*N*2 - 5] = (D[0] + D[2] - D[1])/2;
 	edge_length[*N*2 - 6] = (D[2] + D[1] - D[0])/2;
 }
+
