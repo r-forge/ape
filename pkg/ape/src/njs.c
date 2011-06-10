@@ -82,8 +82,9 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 		for (i = 1; i < n; i++) {
 			for (j = i + 1; j <= n; j++) {
                             
-                                A=(R[give_index(i,j,n)]/(s[give_index(i,j,n)]-2))-D[give_index(i,j,n)];
-                                //Rprintf("Qxy=%f\n",-A*B);
+                                A=((R[give_index(i,j,n)]*100)/(s[give_index(i,j,n)]-2))-D[give_index(i,j,n)]*100;
+                                //Rprintf("%f/%i - %f",R[give_index(i,j,n)],s[give_index(i,j,n)]-2,D[give_index(i,j,n)]);
+                                //Rprintf("Q[%i,%i]=%f\n",i,j,A);
 				if (A > smallest_S) {
 					OTU1 = i;
 					OTU2 = j;
@@ -95,9 +96,9 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 		}
 
                 //update Rxy and Sxy
-                //Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
+               /* Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
                 
-               /* for(i=1;i<n;i++)
+                for(i=1;i<n;i++)
                   {
                     for(j=i+1;j<=n;j++)
                       {
@@ -140,13 +141,41 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 		   a) get the sum for both
 		   b) compute the distances for the new OTU */
 
+                double sum=0;
+
+                for(i=1;i<=n;i++)
+                 {if(i==OTU1 || i==OTU2)continue;
+                 if(D[give_index(OTU1,i,n)]==-1 || D[give_index(OTU2,i,n)]==-1)continue;
+                 sum+=(D[give_index(OTU1,i,n)]-D[give_index(OTU2,i,n)]);
+                 }
+                sum*=(1.0/(2*(s[give_index(OTU1,OTU2,n)]-2)));
+                double dxy=D[give_index(OTU1,OTU2,n)]/2;
+
+                //Rprintf("R[%i,%i]:%f \n",OTU1,OTU2,sum);
+		edge_length[k] = dxy+sum;//OTU1
+               // Rprintf("l1:%f \n",edge_length[k]);
+		edge_length[k + 1] = dxy-sum;//OTU2
+               // Rprintf("l2:%f \n",edge_length[k+1]);
+
 		A = D[give_index(OTU1,OTU2,n)];
 		ij = 0;
 		for (i = 1; i <= n; i++) {
 			if (i == OTU1 || i == OTU2) continue;
-			x = D[give_index(i, OTU1, n)]; /* dist between OTU1 and i */
- 			y = D[give_index(i, OTU2, n)]; /* dist between OTU2 and i */
-			new_dist[ij] = (x + y - A)/2;
+                        if(D[give_index(OTU1,i,n)]!=-1 && D[give_index(OTU2,i,n)]!=-1)
+                         {
+                            new_dist[ij]=0.5*(D[give_index(OTU1,i,n)]-edge_length[k]+D[give_index(OTU2,i,n)]-edge_length[k+1]);
+                         }else{
+                         if(D[give_index(OTU1,i,n)]!=-1)
+                                {
+                                 new_dist[ij]=D[give_index(OTU1,i,n)]-edge_length[k];
+                                }else{
+                                      if(D[give_index(OTU2,i,n)]!=-1)
+                                        {
+                                            new_dist[ij]=D[give_index(OTU2,i,n)]-edge_length[k+1];
+                                        }else{new_dist[ij]=-1;}
+                                     }
+                              }
+
 			ij++;
 		}
 
@@ -208,21 +237,7 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 		/* compute the branch lengths */
 		 
                 
-                double sum=0;
                 
-                for(i=1;i<=n;i++)
-                 {if(i==OTU1 || i==OTU2)continue;
-                 if(D[give_index(OTU1,i,n)]==-1 || D[give_index(OTU2,i,n)]==-1)continue;
-                 sum+=(D[give_index(OTU1,i,n)]-D[give_index(OTU2,i,n)]);
-                 }
-                sum*=(1.0/(2*(s[give_index(OTU1,OTU2,n)]-2)));
-                double dxy=D[give_index(OTU1,OTU2,n)]/2;
-
-                //Rprintf("R[%i,%i]:%f \n",OTU1,OTU2,sum);
-		edge_length[k] = dxy+sum;
-               // Rprintf("l1:%f \n",edge_length[k]);
-		edge_length[k + 1] = dxy-sum;
-               // Rprintf("l2:%f \n",edge_length[k+1]);
 		/* update before the next loop
 		   (we are sure that OTU1 < OTU2) */
 		if (OTU1 != 1)
@@ -245,13 +260,43 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 		cur_nod--;
 		k = k + 2;
 	}
-
-	for (i = 0; i < 3; i++) {
+        int dK=0;//number of known distances in final distance matrix
+        int iUK=-1;//index of unkown distance, if we have one missing distance
+        int iK=-1;//index of only known distance, only needed if dK==1
+        for (i = 0; i < 3; i++) {
 		edge1[*N*2 - 4 - i] = cur_nod;
 		edge2[*N*2 - 4 - i] = otu_label[i + 1];
-	}
-
-	edge_length[*N*2 - 4] = (D[0] + D[1] - D[2])/2;
+                if(D[i]!=-1){dK++;iK=i;}else{iUK=i;}
+	}        
+        if(dK==2)
+         {//if two distances are known: assume our leaves are x,y,z, d(x,z) unknown
+          //and edge weights of three edges are a,b,c, then any b,c>0 that
+          //satisfy c-b=d(y,z)-d(x,y) a+c=d(y,z) are good edge weights, but for
+          //simplicity we assume a=c if d(yz)<d(xy) a=b otherwise, and after some
+          //algebra we get that we can set the missing distance equal to the
+          //maximum of the already present distances
+            int max=-1e50;
+          for(i=0;i<3;i++)
+            {if(i==iUK)continue;
+             if(D[i]>max)max=D[i];
+            }
+          D[iUK]=max;          
+         }
+        if(dK==1)
+         {//through similar motivation as above, if we have just one known distance
+          //we set the other two distances equal to it
+          for(i=0;i<3;i++)
+            {if(i==iK)continue;
+             D[i]=D[iK];
+            }
+         }
+        if(dK==0)
+         {//no distances are known, we just set them to 1
+          for(i=0;i<3;i++)
+           {D[i]=1;
+           }
+         }
+        edge_length[*N*2 - 4] = (D[0] + D[1] - D[2])/2;
 	edge_length[*N*2 - 5] = (D[0] + D[2] - D[1])/2;
 	edge_length[*N*2 - 6] = (D[2] + D[1] - D[0])/2;
 }
