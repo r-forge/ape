@@ -17,6 +17,45 @@ int H(double t)
     return 0;
 }
 
+void choosePair(double* D,int n,double* R,int* s, int* x, int* y,int fS)
+{
+    int i=0,j=0,k=0;
+    double cFS[fS];
+    int iFS[fS];
+    int jFS[fS];
+    for(k=0;k<fS;k++)
+              {cFS[k]=-1e50;
+               iFS[k]=0;
+               jFS[k]=0;
+              }
+    int max=-1e50;
+    for (i = 1; i < n; i++)
+      {
+       for (j = i + 1; j <= n; j++)
+          {int tr=0;
+            double numb=((R[give_index(i,j,n)])/(s[give_index(i,j,n)]-2))-D[give_index(i,j,n)];
+           Rprintf("numb(%i,%i)=%f\n",i,j,numb);
+           for(k=0;k<fS, cFS[k]>numb;k++);
+           Rprintf("k=%i ",k);
+           for(tr=fS-1;tr>k;tr--)
+             {cFS[tr]=cFS[tr-1];
+              iFS[tr]=iFS[tr-1];
+              jFS[tr]=jFS[tr-1];
+             }
+            if(k<fS){cFS[k]=numb;
+                     iFS[k]=i;
+                     jFS[k]=j;
+                    }
+          }
+      }
+   for(k=0;k<fS;k++)
+              {Rprintf("value[%i]=%f ",k,cFS[k]);
+               Rprintf("i=%i ",iFS[k]);
+               Rprintf("j=%i ",jFS[k]);
+               Rprintf("\n");
+              }
+}
+
 double cnxy(int x, int y, int n,double* D)
 {
     
@@ -167,6 +206,8 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 
 
         k=0;
+        int xx,yy;
+        choosePair(D,n,R,s,&xx,&yy,3);
 	while (n > 3) {
 
 		
