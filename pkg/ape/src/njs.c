@@ -10,6 +10,10 @@
 #define DINDEX(i, j) n*(i - 1) - i*(i - 1)/2 + j - i - 1
 /* works if i < j strictly, and i = 1, ...;
    see give_index() below */
+double cnxy(int x, int y, int n,double* D);
+int mxy(int x,int y,int n,double* D);
+double nxy(int x, int y, int n,double* D);
+int cxy(int x, int y, int n,double* D);
 
 int H(double t)
 {
@@ -17,9 +21,10 @@ int H(double t)
     return 0;
 }
 
-void choosePair(double* D,int n,double* R,int* s, int* x, int* y,int fS)
+void choosePair(double* D,int n,double* R,int* s, int* sw, int* x, int* y,int fS)
 {
     int i=0,j=0,k=0;
+    int sww=0;
     double cFS[fS];
     int iFS[fS];
     int jFS[fS];
@@ -28,32 +33,166 @@ void choosePair(double* D,int n,double* R,int* s, int* x, int* y,int fS)
                iFS[k]=0;
                jFS[k]=0;
               }
-    int max=-1e50;
+    double max=-1e50;
     for (i = 1; i < n; i++)
       {
        for (j = i + 1; j <= n; j++)
-          {int tr=0;
+         {if(D[give_index(i,j,n)]==-1){sww=1;continue;}
+          // Rprintf("R[%i,%i]=%f\n",i,j,R[give_index(i,j,n)]);
+           //Rprintf("s[%i,%i]=%i\n",i,j,s[give_index(i,j,n)]);
+          // Rprintf("D[%i,%i]=%f\n",i,j,D[give_index(i,j,n)]);
+           int tr=0;
             double numb=((R[give_index(i,j,n)])/(s[give_index(i,j,n)]-2))-D[give_index(i,j,n)];
-           Rprintf("numb(%i,%i)=%f\n",i,j,numb);
+           //Rprintf("numb(%i,%i)=%f\n",i,j,numb);
            for(k=0;k<fS, cFS[k]>numb;k++);
-           Rprintf("k=%i ",k);
+           //Rprintf("k=%i ",k);
            for(tr=fS-1;tr>k;tr--)
              {cFS[tr]=cFS[tr-1];
               iFS[tr]=iFS[tr-1];
               jFS[tr]=jFS[tr-1];
              }
+            
             if(k<fS){cFS[k]=numb;
                      iFS[k]=i;
                      jFS[k]=j;
                     }
           }
       }
-   for(k=0;k<fS;k++)
+    //no missing distances, just return the one with maximal Q-criterion
+   if(sww==0){*x=iFS[0];*y=jFS[0];*sw=0;return;
+            }
+   /*for(k=0;k<fS;k++)
               {Rprintf("value[%i]=%f ",k,cFS[k]);
                Rprintf("i=%i ",iFS[k]);
                Rprintf("j=%i ",jFS[k]);
                Rprintf("\n");
-              }
+              }*/
+  //calculate N*(x,y)
+  for(i=0;i<fS;i++)
+   {
+    double nb=nxy(iFS[i],jFS[i],n,D);
+    if(nb>max){max=nb;}
+    cFS[i]=nb;
+   }
+  /*Rprintf("all N*(x,y)\n");
+  for(k=0;k<fS;k++)
+              {Rprintf("value[%i]=%f ",k,cFS[k]);
+               Rprintf("i=%i ",iFS[k]);
+               Rprintf("j=%i ",jFS[k]);
+               Rprintf("\n");
+              }*/
+  int dk=0;
+  //shift the max N*xy to the front of the array
+  for(i=0;i<fS;i++)
+   {
+      if(cFS[i]==max)
+        {
+          cFS[dk]=cFS[i];
+          iFS[dk]=iFS[i];
+          jFS[dk]=jFS[i];
+          dk++;
+        }
+   }
+  //if just one pair realises max N*xy, return it
+  if(dk==1){*x=iFS[0];*y=jFS[0];return;}
+  fS=dk;
+ /*Rprintf("max n*xy values\n");
+ for(k=0;k<fS;k++)
+              {Rprintf("value[%i]=%f ",k,cFS[k]);
+               Rprintf("i=%i ",iFS[k]);
+               Rprintf("j=%i ",jFS[k]);
+               Rprintf("\n");
+              }*/
+ max=-1e50;
+ //on the fron of the array containing max N*xy values compute cxy
+ for(i=0;i<fS;i++)
+  {
+    double nb=cxy(iFS[i],jFS[i],n,D);
+    if(nb>max){max=nb;}
+    cFS[i]=nb;
+  }
+ /*Rprintf("all c*xy values\n");
+ for(k=0;k<fS;k++)
+              {Rprintf("value[%i]=%f ",k,cFS[k]);
+               Rprintf("i=%i ",iFS[k]);
+               Rprintf("j=%i ",jFS[k]);
+               Rprintf("\n");
+              }*/
+  //and again shift maximal C*xy values at the fron of the array
+  dk=0;
+  for(i=0;i<fS;i++)
+   {
+      if(cFS[i]==max)
+        {
+          cFS[dk]=cFS[i];
+          iFS[dk]=iFS[i];
+          jFS[dk]=jFS[i];
+          dk++;
+        }
+   }
+ //if just one C*xy with maximal value, return pair realising it
+ if(dk==1){*x=iFS[0];*y=jFS[0];return;}
+ fS=dk;
+ /*Rprintf("max c*xy values\n");
+ for(k=0;k<fS;k++)
+              {Rprintf("value[%i]=%f ",k,cFS[k]);
+               Rprintf("i=%i ",iFS[k]);
+               Rprintf("j=%i ",jFS[k]);
+               Rprintf("\n");
+              }*/
+ max=-1e50;
+ //on the front of the array containing max C*xy compute m*xy
+ for(i=0;i<fS;i++)
+  {
+    double nb=mxy(iFS[i],jFS[i],n,D);
+    if(nb>max){max=nb;}
+    cFS[i]=nb;
+  }
+ /* Rprintf("all m*xy values\n");
+ for(k=0;k<fS;k++)
+              {Rprintf("value[%i]=%f ",k,cFS[k]);
+               Rprintf("i=%i ",iFS[k]);
+               Rprintf("j=%i ",jFS[k]);
+               Rprintf("\n");
+              }*/
+  //again shift maximal m*xy values to the fron of the array
+  dk=0;
+  for(i=0;i<fS;i++)
+   {
+      if(cFS[i]==max)
+        {
+          cFS[dk]=cFS[i];
+          iFS[dk]=iFS[i];
+          jFS[dk]=jFS[i];
+          dk++;
+        }
+   }
+ //if just one maximal value for m*xy return the pair realising it, found at 0
+ if(dk==1){*x=iFS[0];*y=jFS[0];return;}
+ fS=dk;
+ /*Rprintf("max m*xy values\n");
+ for(k=0;k<fS;k++)
+              {Rprintf("value[%i]=%f ",k,cFS[k]);
+               Rprintf("i=%i ",iFS[k]);
+               Rprintf("j=%i ",jFS[k]);
+               Rprintf("\n");
+              }*/
+ //and calculate cnxy on these values, but this time we do not shift, but simply
+ //return the pair realising the maximum, stored at iPos
+ max=-1e50;
+ int iPos=-1;
+ for(i=0;i<fS;i++)
+  {
+    double nb=cnxy(iFS[i],jFS[i],n,D);
+    if(nb>max){max=nb;iPos=i;}
+    cFS[i]=nb;
+  }
+ /*Rprintf("cN*xy\n");
+ Rprintf("value[%i]=%f ",0,cFS[0]);
+ Rprintf("i=%i ",iFS[0]);
+ Rprintf("j=%i ",jFS[0]);
+ Rprintf("\n");*/
+ *x=iFS[iPos];*y=jFS[iPos];
 }
 
 double cnxy(int x, int y, int n,double* D)
@@ -62,7 +201,7 @@ double cnxy(int x, int y, int n,double* D)
     int i=0;
     int j=0;
     double nMeanXY=0;
-    Rprintf("cN[%i,%i]\n",x,y);
+    //Rprintf("cN[%i,%i]\n",x,y);
     for(i=1;i<=n;i++)
      {if(i==x || i==y)continue;
       for(j=1;j<=n;j++)
@@ -70,9 +209,9 @@ double cnxy(int x, int y, int n,double* D)
        if(j==x || j==y)continue;
        if(D[give_index(i,x,n)]==-1 || D[give_index(j,y,n)]==-1 || D[give_index(i,j,n)]==-1)continue;
        
-       Rprintf("considered pair (%i,%i)\n",i,j);
+       //Rprintf("considered pair (%i,%i)\n",i,j);
        nMeanXY+=(D[give_index(i,x,n)]+D[give_index(j,y,n)]-D[give_index(x,y,n)]-D[give_index(i,j,n)]);
-       Rprintf("cnMeanXY after (%i,%i)=%f\n",i,j,nMeanXY);
+       //Rprintf("cnMeanXY after (%i,%i)=%f\n",i,j,nMeanXY);
       }
      }
     return nMeanXY;
@@ -98,7 +237,7 @@ int mxy(int x,int y,int n,double* D)
             my[i]=1;
           }
       }
-    for(i=1;i<=n;i++)
+    /*for(i=1;i<=n;i++)
       {
         Rprintf("mx[%i]=%i ",i,mx[i]);
       }
@@ -108,7 +247,7 @@ int mxy(int x,int y,int n,double* D)
       {
         Rprintf("my[%i]=%i ",i,my[i]);
       }
-    Rprintf("\n");
+    Rprintf("\n");*/
 
     int xmy=0;
     int ymx=0;
@@ -123,7 +262,7 @@ int mxy(int x,int y,int n,double* D)
             ymx++;
           }
       }
-    Rprintf("xmy=%i, ymx=%i, xmy+ymx=%i\n",xmy,ymx,xmy+ymx);
+    //Rprintf("xmy=%i, ymx=%i, xmy+ymx=%i\n",xmy,ymx,xmy+ymx);
     return xmy+ymx;
 }
 double nxy(int x, int y, int n,double* D)
@@ -132,7 +271,7 @@ double nxy(int x, int y, int n,double* D)
     int i=0;
     int j=0;
     double nMeanXY=0;
-    Rprintf("N[%i,%i]\n",x,y);
+    //Rprintf("N[%i,%i]\n",x,y);
     for(i=1;i<=n;i++)
      {if(i==x || i==y)continue;
       for(j=1;j<=n;j++)
@@ -140,23 +279,41 @@ double nxy(int x, int y, int n,double* D)
        if(j==x || j==y)continue;
        if(D[give_index(i,x,n)]==-1 || D[give_index(j,y,n)]==-1 || D[give_index(i,j,n)]==-1)continue;
        sCXY++;
-       Rprintf("considered pair (%i,%i)\n",i,j);
+       //Rprintf("considered pair (%i,%i)\n",i,j);
        nMeanXY+=H(D[give_index(i,x,n)]+D[give_index(j,y,n)]-D[give_index(x,y,n)]-D[give_index(i,j,n)]);
-       Rprintf("nMeanXY after (%i,%i)=%f\n",i,j,nMeanXY);
+       //Rprintf("nMeanXY after (%i,%i)=%f\n",i,j,nMeanXY);
       }
      }
     return nMeanXY/sCXY;
 }
 
+int cxy(int x, int y, int n,double* D)
+{
+    int sCXY=0;
+    int i=0;
+    int j=0;
+    
+    for(i=1;i<=n;i++)
+     {if(i==x || i==y)continue;
+      for(j=1;j<=n;j++)
+      {if(i==j)continue;
+       if(j==x || j==y)continue;
+       if(D[give_index(i,x,n)]==-1 || D[give_index(j,y,n)]==-1 || D[give_index(i,j,n)]==-1)continue;
+       sCXY++;
+      }
+     }
+    return sCXY;
+}
+
 void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 {       //assume missing values are denoted by -1
-	double *R, Sdist, Ndist, *new_dist, A, B, smallest_S, x, y;
+	double *S,*R, Sdist, Ndist, *new_dist, A, B, smallest_S, x, y;
 	int n, i, j, k, ij, smallest, OTU1, OTU2, cur_nod, o_l, *otu_label;
 
         int *s;//s contains |Sxy|, which is all we need for agglomeration
         double *newR;
         int *newS;
-        int fS=1;//we pick the first fS pairs based on Q*
+        int fS=15;//we pick the first fS pairs based on Q*
 
 	R = &Sdist;
 	new_dist = &Ndist;
@@ -165,6 +322,7 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 	cur_nod = 2*n - 2;
 
 	R = (double*)R_alloc(n*(n - 1)/2, sizeof(double));
+        S = (double*)R_alloc(n + 1, sizeof(double));
         newR = (double*)R_alloc(n*(n - 1)/2, sizeof(double));
 	new_dist = (double*)R_alloc(n*(n - 1)/2, sizeof(double));
 	otu_label = (int*)R_alloc(n + 1, sizeof(int));
@@ -203,29 +361,61 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
            }
          }
 
+        /*for(i=1;i<n;i++)
+                  {
+                    for(j=i+1;j<=n;j++)
+                      {
+                        Rprintf("R[%i,%i]=%f ",i,j,R[give_index(i,j,n)]);
+                      }
+                    Rprintf("\n");
+                  }
 
+                for(i=1;i<n;i++)
+                  {
+                    for(j=i+1;j<=n;j++)
+                      {
+                        Rprintf("s[%i,%i]=%i ",i,j,s[give_index(i,j,n)]);
+                      }
+                    Rprintf("\n");
+                  }*/
 
         k=0;
-        int xx,yy;
-        choosePair(D,n,R,s,&xx,&yy,3);
+        int sw=1;//if 1 then incomplete
 	while (n > 3) {
 
 		
 
 		ij = 0;
 		smallest_S = -1e50;
+                if(sw==1)
                 for(i=0;i<n*(n-1)/2;i++)
                   {newR[i]=0;
                    newS[i]=0;
-                  }
-		B = n - 2;
-		for (i = 1; i < n; i++) {
-			for (j = i + 1; j <= n; j++) {
-                            
-                                A=((R[give_index(i,j,n)])/(s[give_index(i,j,n)]-2))-D[give_index(i,j,n)];
-                                Rprintf("%f/%i - %f\n",R[give_index(i,j,n)],s[give_index(i,j,n)]-2,D[give_index(i,j,n)]);
-                                Rprintf("Q[%i,%i]=%f\n",i,j,A);
-                                
+                }else{
+                    for(i=1;i<=n;i++)
+                       {S[i]=0;
+                       }
+                     }
+		B=n-2;
+                if(sw==1)
+                     {
+                      choosePair(D,n,R,s,&sw,&OTU1,&OTU2,fS);
+                     }
+                 else{ //Rprintf("distance matrix is now complete\n");
+                        for (i=1;i<=n;i++)
+                         for(j=1;j<=n;j++)
+                           {if(i==j)continue;
+                             //Rprintf("give_index(%i,%i)=%i\n",i,j,give_index(i,j,n));
+                             //Rprintf("D[%i,%i]=%f\n",i,j,D[give_index(i,j,n)]);
+                             S[i]+=D[give_index(i,j,n)];
+                           }
+                        B=n-2;
+                        //Rprintf("n=%i,B=%f",n,B);
+		        for (i = 1; i < n; i++) {
+			 for (j = i + 1; j <= n; j++) {
+                             //Rprintf("S[%i]=%f, S[%i]=%f, D[%i,%i]=%f, B=%f",i,S[i],j,S[j],i,j,D[give_index(i,j,n)],B);
+                                A=S[i]+S[j]-B*D[give_index(i,j,n)];                               
+                                //Rprintf("Q[%i,%i]=%f\n",i,j,A);
 				if (A > smallest_S) {
 					OTU1 = i;
 					OTU2 = j;
@@ -234,10 +424,10 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 				}
 				ij++;
 			}
-		}
-
-                //update Rxy and Sxy
-                Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
+		        }
+                     }
+                
+                /*Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
                 
                 for(i=1;i<n;i++)
                   {
@@ -258,9 +448,20 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
                   }
 
                 for(i=1;i<n;i++)
+                  {
+                    for(j=i+1;j<=n;j++)
+                      {
+                        Rprintf("d[%i,%i]=%f ",i,j,D[give_index(i,j,n)]);
+                      }
+                    Rprintf("\n");
+                  }*/
+                //update Rxy and Sxy, only if matrix still incomplete
+                if(sw==1)
+                for(i=1;i<n;i++)
                 {if(i==OTU1 || i==OTU2)continue;
                  for(j=i+1;j<=n;j++)
                   {if(j==OTU1 || j==OTU2)continue;
+                    if(D[give_index(i,j,n)]==-1)continue;
                      if(D[give_index(i,OTU1,n)]!=-1 && D[give_index(j,OTU1,n)]!=-1)
                       {//OTU1 was considered for Rij, so now subtract
                        R[give_index(i,j,n)]-=(D[give_index(i,OTU1,n)]+D[give_index(j,OTU1,n)]);
@@ -273,6 +474,7 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
                       }
                   }
                 }
+
 		edge2[k] = otu_label[OTU1];
 		edge2[k + 1] = otu_label[OTU2];
 		edge1[k] = edge1[k + 1] = cur_nod;
@@ -291,15 +493,21 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
                  }
                 //although s was updated above, s[otu1,otu2] has remained unchanged
                 //so it is safe to use it here
-                sum*=(1.0/(2*(s[give_index(OTU1,OTU2,n)]-2)));
+                //if complete distanes, use N-2, else use S
+                int down=B;
+                if(sw==1){down=s[give_index(OTU1,OTU2,n)]-2;}
+                //Rprintf("down=%f\n",B);
+                sum*=(1.0/(2*(down)));
+                //Rprintf("sum=%f\n",sum);
                 double dxy=D[give_index(OTU1,OTU2,n)]/2;
 
                 //Rprintf("R[%i,%i]:%f \n",OTU1,OTU2,sum);
 		edge_length[k] = dxy+sum;//OTU1
-               // Rprintf("l1:%f \n",edge_length[k]);
+                //Rprintf("l1:%f \n",edge_length[k]);
 		edge_length[k + 1] = dxy-sum;//OTU2
-               // Rprintf("l2:%f \n",edge_length[k+1]);
-
+                //Rprintf("l2:%f \n",edge_length[k+1]);
+               //no need to change distance matrix update for complete distance
+               //case, as pairs will automatically fall in the right cathegory
 		A = D[give_index(OTU1,OTU2,n)];
 		ij = 0;
 		for (i = 1; i <= n; i++) {
@@ -338,8 +546,9 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
                    }
                   Rprintf("\n");
                 }*/
-                //compute Rui
+                //compute Rui, only if distance matrix is still incomplete
                 ij=0;
+                if(sw==1)
                 for(i=2;i<n;i++)
                   {
                    ij++;
@@ -357,7 +566,8 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
                         }
                      }
                   }
-                //fill in the rest of R and S
+                //fill in the rest of R and S, again only if distance matrix still
+                //incomplete
                 for(i=1;i<n;i++)
                 {if(i==OTU1 || i==OTU2)continue;
                  for(j=i+1;j<=n;j++)
@@ -367,8 +577,9 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
                    ij++;
                   }
                 }
-                //update newR and newS with the new taxa
-
+                //update newR and newS with the new taxa, again only if distance
+                //matrix is still incomplete
+                if(sw==1)
                 for(i=2;i<n-1;i++)
                 {if(new_dist[give_index(1,i,n-1)]==-1)continue;
                  for(j=i+1;j<=n-1;j++)
@@ -397,8 +608,11 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 		for (i = 0; i < n*(n - 1)/2; i++)
                   {
                     D[i] = new_dist[i];
-                    R[i] = newR[i];
-                    s[i] = newS[i];
+                    if(sw==1)
+                       {
+                        R[i] = newR[i];
+                        s[i] = newS[i];
+                       }
                   }
 		cur_nod--;
 		k = k + 2;
