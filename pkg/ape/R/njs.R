@@ -1,8 +1,8 @@
 njs <- function(X)
 {
     if (is.matrix(X)) X <- as.dist(X)
-    if (any(is.na(X)))
-        stop("missing values are not allowed in the distance matrix")
+    X[is.na(X)]=-1
+    X[X<0]=-1	
     N <- attr(X, "Size")
     labels <- attr(X, "Labels")
     if (is.null(labels)) labels <- as.character(1:N)
