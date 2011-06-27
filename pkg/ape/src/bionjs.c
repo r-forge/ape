@@ -16,7 +16,9 @@ void bionjs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 {       //assume missing values are denoted by -1
 	double *S,*R , *v,*new_v, Sdist, Ndist, *new_dist, A, B, smallest_S, x, y;
 	int n, i, j, k, ij, smallest, OTU1, OTU2, cur_nod, o_l, *otu_label;
-
+        /*for(i=0;i<n*(n-1)/2;i++)
+          {if(isNA(D[i])){D[i]=-1;}
+          }*/
         int *s;//s contains |Sxy|, which is all we need for agglomeration
         double *newR;
         int *newS;
@@ -66,11 +68,15 @@ void bionjs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
            {//ij is the pair for which we compute
             //skip k if we do not know the distances between it and i AND j
 
+             if(k==i || k==j)
+               {
+                  s[give_index(i,j,n)]++;
+                  continue;
+               }
               if(D[give_index(i,k,n)]==-1 || D[give_index(j,k,n)]==-1)continue;
+              //Rprintf("%i\n",k);
               s[give_index(i,j,n)]++;
-              if(i!=k)
               R[give_index(i,j,n)]+=D[give_index(i,k,n)];
-              if(j!=k)
               R[give_index(i,j,n)]+=D[give_index(j,k,n)];
            }
          }
@@ -98,6 +104,11 @@ void bionjs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 	while (n > 3) {
 
 		ij = 0;
+                for(i=1;i<n;i++)
+                 for(j=i+1;j<=n;j++)
+                  {newR[give_index(i,j,n)]=0;
+                   newS[give_index(i,j,n)]=0;
+                  }
 		smallest_S = -1e50;
                 if(sw==0)              
                     for(i=1;i<=n;i++)
@@ -276,12 +287,15 @@ void bionjs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 
                    for(j=1;j<n;j++)
                      {
+                       if(j==1 || j==i)
+                       {
+                         newS[give_index(1,i,n-1)]++;
+                         continue;
+                       }
                        if(new_dist[give_index(i,j,n-1)]!=-1 && new_dist[give_index(1,j,n-1)]!=-1)
                         {
                           newS[give_index(1,i,n-1)]++;
-                          if(i!=j)
                           newR[give_index(1,i,n-1)]+=new_dist[give_index(i,j,n-1)];
-                          if(1!=j)
                           newR[give_index(1,i,n-1)]+=new_dist[give_index(1,j,n-1)];
                         }
                      }
