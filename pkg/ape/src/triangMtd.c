@@ -334,9 +334,10 @@ void triangMtd(double* d, int* np, int* ed1,int* ed2, double* edLen)
          {if(w[s])continue;
            for(i=1;i<=n;i++)
             {if(i==z)continue;
-               if(!w[i])continue;
+               if(i!=x && i!=y)continue;//we only consider x and y as being other leaf
+                                        //and take the minimum of them as being new distance
                double newL=0.5*(d[give_indexx(i,s,n)]+d[give_indexx(z,s,n)]-d[give_indexx(i,z,n)]);//one of leaves is
-//z, since
+                                                      //z, since
                                                       //all pairs not cotaining z
                                                       //will remain unchanged
                if(newL<l[s])
