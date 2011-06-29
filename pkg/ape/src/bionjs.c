@@ -221,6 +221,9 @@ void bionjs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
                 //if complete distanes, use N-2, else use S
                 int down=B;
                 if(sw==1){down=s[give_index(OTU1,OTU2,n)]-2;}
+                if(down==0)
+                  {error("distance information insufficient to construct a tree");
+                  }
                 //Rprintf("down=%f\n",B);
                 sum*=(1.0/(2*(down)));
                 //Rprintf("sum=%f\n",sum);
