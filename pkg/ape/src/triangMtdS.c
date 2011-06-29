@@ -99,6 +99,9 @@ void triangMtdS(double* d, int* np, int* ed1,int* ed2, double* edLen)
          m[i]++;         
        }
     }
+ int numEdges=2*k-4;//0-based, so subtract 1
+ //Rprintf("numEdge=%i",numEdges);
+ int nv=(k-2)+n;
  while(k<n)
  {
    //now find element in X\Y such that it has most known distances to already
@@ -107,7 +110,7 @@ void triangMtdS(double* d, int* np, int* ed1,int* ed2, double* edLen)
    //s[i]=1 => i not added to tree
     int max=-1e50;
     int maxPos=-1;
-    for(i=1;i<n;i++)
+    for(i=1;i<=n;i++)
     {
      if(s[i]==0)continue;
      if(m[i]>max)
@@ -127,7 +130,88 @@ void triangMtdS(double* d, int* np, int* ed1,int* ed2, double* edLen)
     }
 
    //find path to attach maxPos to, grow tree
-   //TO DO 
+        double minDist=1e50;
+        int z=maxPos;
+        int x=-1,y=-1;
+        for(i=1;i<n;i++)
+        {if(s[i]==1 || d[give_index(i,z,n)]==-1 || i==z)continue;
+         for(j=i+1;j<=n;j++)
+          {
+            if(s[j]==1 || d[give_index(j,z,n)]==-1 || j==z)continue;
+            double tDist=(d[give_index(i,z,n)]+d[give_index(j,z,n)]-d[give_index(i,j,n)])/2;
+            if(tDist<minDist)
+             {
+                minDist=tDist;
+                x=i;
+                y=j;
+             }
+          }
+        }
+        if(x==-1 || y==-1)
+         {error("could not build tree from given distance matrix");
+         }
+        int* ord=getPathBetween(x,y,n,ed1,ed2,numEdges);
+        /*for(i=1;i<=2*n-2;i++)
+         {Rprintf("ord[%i]=%i ",i,ord[i]);
+         }
+        Rprintf("\n");*/
+        //look for the edge on the path x to y to subdivide
+        
+        int p=x;
+        double sum=0;
+        double prevSum=0;
+        int aux=0;
+        
+        int subdiv=-1;//index of edge to subdivide
+        //error("d[y,x]=%f,d[z,x]=%f,d[z,y]=%f\n",d[give_indexx(y,x,n)],d[give_indexx(z,x,n)],d[give_indexx(z,y,n)]);
+        double lx=0.5*(d[give_indexx(y,x,n)]+d[give_indexx(z,x,n)]-d[give_indexx(z,y,n)]);//distance of attachment
+       // Rprintf("adding %i on the path between %i and %i at a distance from x of %f and a distance of %f from tree",z,x,y,lx,minDist);
+        //point from x
+        //Rprintf("Adding leaf %i, between %i and %i\n",z,x,y);
+       // Rprintf("%i situated at a distance of %d from tree",z,minDist);
+        int sw=0;
+        //Rprintf("path between %i and %i\n",x,y);
+        //int cc=0;
+        while(p!=y && sum<lx)
+          { //cc++;
+            aux=p;
+            //error("%i -> %i ",p,ord[p]);
+            p=ord[p];
+            prevSum=sum;
+            for(i=0;i<=numEdges;i++)
+              {
+                if((ed1[i]==aux && ed2[i]==p)||(ed2[i]==aux && ed1[i]==p))
+                  {
+                    if(ed2[i]==aux && ed1[i]==p){sw=1;}
+                    subdiv=i;
+                    sum+=edLen[i];
+                  }
+              }
+            //if(cc>1000)error("failed to follow path between x=%i y=%i\n",x,y);
+          }
+
+
+        nv++;
+        //subdivide subdiv with a node labelled nv
+        //length calculation        
+
+        int edd=ed2[subdiv];
+        ed2[subdiv]=nv;
+        edLen[subdiv]= (sw==1)?(lx-prevSum):(sum-lx);//check which 'half' of the
+                                                     //path the leaf belongs to
+                                                     //and updates accordingly
+        //error("sum=%f, prevsum=%f\n",sum,prevSum);
+        //error("lx-prevSum=%f, sum-lx=%f, minDist=%f",lx-prevSum,sum-lx,minDist);
+        //Rprintf("adding %i on path %i %i, at distance %f from %i, and %f from tree\n",z,x,y,lx,x,minDist);
+       // Rprintf("subdividing edge %i\n",subdiv);
+        numEdges++;
+        ed1[numEdges]=nv;
+        ed2[numEdges]=edd;
+        edLen[numEdges]= (sw==1)?(sum-lx):(lx-prevSum);
+        numEdges++;
+        edLen[numEdges]=minDist;
+        ed1[numEdges]=nv;
+        ed2[numEdges]=z;
    k++;
  }
  }
