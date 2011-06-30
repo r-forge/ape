@@ -38,9 +38,9 @@ void choosePair(double* D,int n,double* R,int* s, int* sw, int* x, int* y,int fS
       {
        for (j = i + 1; j <= n; j++)
          {if(D[give_index(i,j,n)]==-1){sww=1;continue;}
-          // Rprintf("R[%i,%i]=%f\n",i,j,R[give_index(i,j,n)]);
+           //Rprintf("R[%i,%i]=%f\n",i,j,R[give_index(i,j,n)]);
            //Rprintf("s[%i,%i]=%i\n",i,j,s[give_index(i,j,n)]);
-          // Rprintf("D[%i,%i]=%f\n",i,j,D[give_index(i,j,n)]);
+           //Rprintf("D[%i,%i]=%f\n",i,j,D[give_index(i,j,n)]);
            int tr=0;
             double numb=((R[give_index(i,j,n)])/(s[give_index(i,j,n)]-2))-D[give_index(i,j,n)];
            //Rprintf("numb(%i,%i)=%f\n",i,j,numb);
@@ -148,7 +148,7 @@ void choosePair(double* D,int n,double* R,int* s, int* sw, int* x, int* y,int fS
     if(nb>max){max=nb;}
     cFS[i]=nb;
   }
- /* Rprintf("all m*xy values\n");
+  /*Rprintf("all m*xy values\n");
  for(k=0;k<fS;k++)
               {Rprintf("value[%i]=%f ",k,cFS[k]);
                Rprintf("i=%i ",iFS[k]);
@@ -203,14 +203,16 @@ double cnxy(int x, int y, int n,double* D)
     double nMeanXY=0;
     //Rprintf("cN[%i,%i]\n",x,y);
     for(i=1;i<=n;i++)
-     {if(i==x || i==y)continue;
+     {
       for(j=1;j<=n;j++)
       {if(i==j)continue;
-       if(j==x || j==y)continue;
-       if(D[give_index(i,x,n)]==-1 || D[give_index(j,y,n)]==-1 || D[give_index(i,j,n)]==-1)continue;
-       
-       //Rprintf("considered pair (%i,%i)\n",i,j);
-       nMeanXY+=(D[give_index(i,x,n)]+D[give_index(j,y,n)]-D[give_index(x,y,n)]-D[give_index(i,j,n)]);
+       if((i==x && j==y) || (i==y && j==x))continue;
+       double n1=0;
+       double n2=0;
+       if(i!=x)n1=D[give_index(i,x,n)];
+       if(j!=y)n2=D[give_index(j,y,n)];
+       if(n1==-1 || n2==-1 || D[give_index(i,j,n)]==-1)continue;
+       nMeanXY+=(n1+n2-D[give_index(x,y,n)]-D[give_index(i,j,n)]);
        //Rprintf("cnMeanXY after (%i,%i)=%f\n",i,j,nMeanXY);
       }
      }
@@ -228,11 +230,11 @@ int mxy(int x,int y,int n,double* D)
       }
     for(i=1;i<=n;i++)
       {
-        if(D[give_index(x,i,n)]==-1)
+        if(i!=x && D[give_index(x,i,n)]==-1)
           {
             mx[i]=1;
           }
-        if(D[give_index(y,i,n)]==-1)
+        if(i!=y && D[give_index(y,i,n)]==-1)
           {
             my[i]=1;
           }
@@ -273,14 +275,18 @@ double nxy(int x, int y, int n,double* D)
     double nMeanXY=0;
     //Rprintf("N[%i,%i]\n",x,y);
     for(i=1;i<=n;i++)
-     {if(i==x || i==y)continue;
+     {
       for(j=1;j<=n;j++)
       {if(i==j)continue;
-       if(j==x || j==y)continue;
-       if(D[give_index(i,x,n)]==-1 || D[give_index(j,y,n)]==-1 || D[give_index(i,j,n)]==-1)continue;
+       if((i==x && j==y) || (i==y && j==x))continue;
+       double n1=0;
+       double n2=0;
+       if(i!=x)n1=D[give_index(i,x,n)];
+       if(j!=y)n2=D[give_index(j,y,n)];
+       if(n1==-1 || n2==-1 || D[give_index(i,j,n)]==-1)continue;
        sCXY++;
        //Rprintf("considered pair (%i,%i)\n",i,j);
-       nMeanXY+=H(D[give_index(i,x,n)]+D[give_index(j,y,n)]-D[give_index(x,y,n)]-D[give_index(i,j,n)]);
+       nMeanXY+=H(n1+n2-D[give_index(x,y,n)]-D[give_index(i,j,n)]);
        //Rprintf("nMeanXY after (%i,%i)=%f\n",i,j,nMeanXY);
       }
      }
@@ -294,11 +300,15 @@ int cxy(int x, int y, int n,double* D)
     int j=0;
     
     for(i=1;i<=n;i++)
-     {if(i==x || i==y)continue;
+     {
       for(j=1;j<=n;j++)
       {if(i==j)continue;
-       if(j==x || j==y)continue;
-       if(D[give_index(i,x,n)]==-1 || D[give_index(j,y,n)]==-1 || D[give_index(i,j,n)]==-1)continue;
+       if((i==x && j==y) || (i==y && j==x))continue;
+       double n1=0;
+       double n2=0;
+       if(i!=x)n1=D[give_index(i,x,n)];
+       if(j!=y)n2=D[give_index(j,y,n)];
+       if(n1==-1 || n2==-1 || D[give_index(i,j,n)]==-1)continue;
        sCXY++;
       }
      }
@@ -353,7 +363,7 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
           //Rprintf("for %i and %i :\n",i,j);
           for(k=1;k<=n;k++)
            {//ij is the pair for which we compute
-            //skip k if we do not know the distances between it and i AND j
+            //skip k if we do not know the distances between it and i AND j             
               if(k==i || k==j)
                {
                   s[give_index(i,j,n)]++;
@@ -367,7 +377,7 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
            }
          }
 
-        /*for(i=1;i<n;i++)
+       /* for(i=1;i<n;i++)
                   {
                     for(j=i+1;j<=n;j++)
                       {
@@ -434,7 +444,7 @@ void njs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
 		        }
                      }
                 
-               /* Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
+                /*Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
                 
                 for(i=1;i<n;i++)
                   {
