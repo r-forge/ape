@@ -12,7 +12,7 @@
    see give_index() below */
 
 
-void bionjs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
+void bionjs(double *D, int *N, int *edge1, int *edge2, double *edge_length,int* fsS)
 {       //assume missing values are denoted by -1
 	double *S,*R , *v,*new_v, Sdist, Ndist, *new_dist, A, B, smallest_S, x, y;
 	int n, i, j, k, ij, smallest, OTU1, OTU2, cur_nod, o_l, *otu_label;
@@ -22,7 +22,7 @@ void bionjs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
         int *s;//s contains |Sxy|, which is all we need for agglomeration
         double *newR;
         int *newS;
-        int fS=15;//we pick the first fS pairs based on Q*
+        int fS=*fsS;
 
 	R = &Sdist;
 	new_dist = &Ndist;
@@ -222,7 +222,7 @@ void bionjs(double *D, int *N, int *edge1, int *edge2, double *edge_length)
                 int down=B;
                 if(sw==1){down=s[give_index(OTU1,OTU2,n)]-2;}
                 if(down==0)
-                  {error("distance information insufficient to construct a tree");
+                  {error("distance information insufficient to construct a tree, leaves %i and %i isolated from tree",OTU1,OTU2);
                   }
                 //Rprintf("down=%f\n",B);
                 sum*=(1.0/(2*(down)));
