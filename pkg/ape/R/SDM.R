@@ -22,11 +22,15 @@ SDM <- function(...)
    }
   a <- mat.or.vec(1,k+tot+k+length(labels))#first k are alphas, subseqeunt ones aip
  			        #each matrix p starting at astart[p], next are 
-			        #Lagrange multipliers
+			        #Lagrange multipliers, miu, niu, lambda in that order
+  miustart=k+tot
+  niustart=miustart+n
+  lambstart=niustart+k
   n <- length(labels)
   X <- mat.or.vec(n,n)
   V <- mat.or.vec(n,n)
   w <- mat.or.vec(n,n) 
+  col <- mat.or.vec(k+tot+k+length(labels),1)#free terms of system
   rownames(X) <- labels
   colnames(X) <- labels
   
@@ -38,7 +42,7 @@ SDM <- function(...)
   
   for(i in c(1:(n-1)))
    for(j in c(i+1:(n-i)))
-    { wij=0
+    { 
       for(p in c(1:k))
         {d=st[[p]]
           if(is.element(rownames(X)[i],rownames(d)) & is.element(colnames(X)[j],colnames(d)))
@@ -48,10 +52,11 @@ SDM <- function(...)
         }  
     }
  Q=mat.or.vec(length(labels)+k+k+tot,length(labels)+k+k+tot) 
+ #first decompose first sum in paper
  for(p in c(1:k)) 
   { d_p=st[[p]]    
     for(l in c(1:k))#first compute coeficients of alphas
-     { sum=0	 
+     { sum=0	  
        if(l==p)#calculate alpha_p
         { 
           for(i in c(1:n))
@@ -60,10 +65,14 @@ SDM <- function(...)
             { #check if {i,j}\subset L_l
 		  d=st[[l]]             		  	
               if(i!=j & is.element(labels[i],rownames(d)) & is.element(labels[j],colnames(d)))
-               {
-                sum=sum+((d[rownames(d)==labels[i],colnames(d)==labels[j]]*d[rownames(d)==labels[i],colnames(d)==labels[j]])-sp[l]*d[rownames(d)==labels[i],colnames(d)==labels[j]]/w[i,j])  
-		   }
-            }
+               {dij=d[rownames(d)==labels[i],colnames(d)==labels[j]]
+                sum=sum+((dij*dij)-sp[l]*dij/w[i,j]) 
+		    ipos=which(rownames(d)==labels[i])
+                jpos=which(rownames(d)==labels[j]) 
+		    Q[p,astart[l]+ipos]=Q[p,astart[l]+ipos]+(dij-(sp[l]/w[i,j]))
+		    Q[p,astart[l]+jpos]=Q[p,astart[l]+jpos]+(dij-(sp[l]/w[i,j]))
+               }
+            } 
           }
 	   }else
           {
@@ -71,17 +80,106 @@ SDM <- function(...)
              {
          	  for(j in c(1:n))
                { #check if {i,j}\subset L_l
-	   	     d=st[[l]]             		  	
+	   	     d=st[[l]]            		  	
                  if(i!=j & is.element(labels[i],rownames(d)) & is.element(labels[j],colnames(d)) & is.element(labels[i],rownames(d_p)) & is.element(labels[j],colnames(d_p)))
-                  {
-                   sum=sum-sp[l]*d[rownames(d)==labels[i],colnames(d)==labels[j]]/w[i,j] 
+                  {dij=d[rownames(d)==labels[i],colnames(d)==labels[j]]
+                   sum=sum-sp[l]*dij/w[i,j] 
+			 ipos=which(rownames(d)==labels[i])
+                   jpos=which(rownames(d)==labels[j]) 
+		       Q[p,astart[l]+ipos]=Q[p,astart[l]+ipos]-sp[l]/w[i,j]
+		       Q[p,astart[l]+jpos]=Q[p,astart[l]+jpos]-sp[l]/w[i,j]
 		      }
                }
              }
           }
       Q[p,l]=sum
      }
+   Q[p,lambstart+1]=1
+  }
+ r=k
+ for(p in c(1:k))
+  {dp=st[[p]] 
+   for(i in c(1:n))
+    { if(is.element(labels[i],rownames(dp)))
+       {r=r+1
+ 	   for(l in c(1:k))
+          {d=st[[l]]
+	     if(l==p)
+ 		{
+		 for(j in c(1:n))
+              {  
+                if(i!=j & is.element(labels[j],rownames(dp)))
+                 { dij=d[rownames(d)==labels[i],colnames(d)==labels[j]]
+                   Q[r,l]=Q[r,l]+(dij-sp[l]*dij/w[i,j])
+			 ipos=which(rownames(d)==labels[i])
+                   jpos=which(rownames(d)==labels[j]) 
+			 Q[r,astart[l]+ipos]=Q[r,astart[l]+ipos]+(1-sp[l]/w[i,j])
+ 			 Q[r,astart[l]+jpos]=Q[r,astart[l]+jpos]+(1-sp[l]/w[i,j])
+                 }
+              } 
+		}else
+            {
+ 		  for(j in c(1:n))
+              { 
+                if(i!=j & is.element(labels[j],rownames(dp)) & is.element(labels[i],rownames(d)) & is.element(labels[j],colnames(d)))
+                 { dij=d[rownames(d)==labels[i],colnames(d)==labels[j]]                  
+			 Q[r,l]=Q[r,l]+(dij-sp[l]*dij/w[i,j])
+			 ipos=which(rownames(d)==labels[i])
+                   jpos=which(rownames(d)==labels[j]) 
+			 Q[r,astart[l]+ipos]=Q[r,astart[l]+ipos]-sp[l]/w[i,j]
+ 			 Q[r,astart[l]+jpos]=Q[r,astart[l]+jpos]-sp[l]/w[i,j]
+                 }
+              }
+            }	
+          }	
+	  if(p<k)Q[r,]=Q[r,]*sp[p]
+        Q[r,miustart+i]=1
+        if(p<k)Q[r,niustart+p+1]=1
+       }        
+    }
   } 
- print(Q)
+ r=r+1
+ col[r]=k
+ for(i in c(1:k))
+  {
+   Q[r,i]=1
+  } 
+ for(i in c(1:n))
+  {r=r+1
+   for(p in c(1:k))
+    { d=st[[p]]
+      if(is.element(labels[i],rownames(d)))
+	 {ipos=which(rownames(d)==labels[i])
+        Q[r,astart[p]+ipos]=1
+ 	 }
+    }
+  }
+ for(p in c(1:(k-1)))
+  {r=r+1
+   for(i in c(1:n))
+    { d=st[[p]]
+      if(is.element(labels[i],rownames(d)))
+	{
+ 	  ipos=which(rownames(d)==labels[i])
+        Q[r,astart[p]+ipos]=1
+ 	}
+    }
+  }
+ a <- solve(Q,col)
+
+ for(i in c(1:n))
+  for(j in c(1:n))
+   { sum=0
+     for(p in c(1:k))
+      { d=st[[p]]
+        if(is.element(labels[i],rownames(d)) & is.element(labels[j],rownames(d)))
+	    { 
+            ipos=which(rownames(d)==labels[i])
+            jpos=which(rownames(d)==labels[j]) 
+		sum=sum+sp[p]*(a[p]*d[ipos,jpos]+astart[
+          }
+	} 
+   } 
+
  list(X,V)
 }
