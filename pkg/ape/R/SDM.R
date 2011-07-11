@@ -170,15 +170,23 @@ SDM <- function(...)
  for(i in c(1:n))
   for(j in c(1:n))
    { sum=0
+     sumv=0
      for(p in c(1:k))
       { d=st[[p]]
         if(is.element(labels[i],rownames(d)) & is.element(labels[j],rownames(d)))
 	    { 
             ipos=which(rownames(d)==labels[i])
             jpos=which(rownames(d)==labels[j]) 
-		sum=sum+sp[p]*(a[p]*d[ipos,jpos]+astart[
+		sum=sum+sp[p]*(a[p]*d[ipos,jpos]+a[astart[p]+ipos]+a[astart[p]+jpos])
+	      sumv=sumv+sp[p]*(a[p]*d[ipos,jpos])*(a[p]*d[ipos,jpos])
           }
-	} 
+	}
+     X[i,j]=sum/w[i,j]
+     V[i,j]=sumv/(w[i,j]*w[i,j]) 
+     if(i==j){
+              X[i,j]=0
+              V[i,j]=0
+             }
    } 
 
  list(X,V)
