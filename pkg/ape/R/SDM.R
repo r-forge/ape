@@ -23,10 +23,11 @@ SDM <- function(...)
   a <- mat.or.vec(1,k+tot+k+length(labels))#first k are alphas, subseqeunt ones aip
  			        #each matrix p starting at astart[p], next are 
 			        #Lagrange multipliers, miu, niu, lambda in that order
+  n <- length(labels)
   miustart=k+tot
   niustart=miustart+n
-  lambstart=niustart+k
-  n <- length(labels)
+  lambstart=niustart+k-1
+  
   X <- mat.or.vec(n,n)
   V <- mat.or.vec(n,n)
   w <- mat.or.vec(n,n) 
@@ -56,7 +57,8 @@ SDM <- function(...)
  for(p in c(1:k)) 
   { d_p=st[[p]]    
     for(l in c(1:k))#first compute coeficients of alphas
-     { sum=0	  
+     { sum=0
+       dijp=-1	  
        if(l==p)#calculate alpha_p
         { 
           for(i in c(1:n))
@@ -66,11 +68,11 @@ SDM <- function(...)
 		  d=st[[l]]             		  	
               if(i!=j & is.element(labels[i],rownames(d)) & is.element(labels[j],colnames(d)))
                {dij=d[rownames(d)==labels[i],colnames(d)==labels[j]]
-                sum=sum+((dij*dij)-sp[l]*dij/w[i,j]) 
+                sum=sum+((dij*dij)-sp[l]*dij*dij/w[i,j]) 
 		    ipos=which(rownames(d)==labels[i])
                 jpos=which(rownames(d)==labels[j]) 
-		    Q[p,astart[l]+ipos]=Q[p,astart[l]+ipos]+(dij-(sp[l]/w[i,j]))
-		    Q[p,astart[l]+jpos]=Q[p,astart[l]+jpos]+(dij-(sp[l]/w[i,j]))
+		    Q[p,astart[l]+ipos]=Q[p,astart[l]+ipos]+(dij-(sp[l]*dij/w[i,j]))
+		    Q[p,astart[l]+jpos]=Q[p,astart[l]+jpos]+(dij-(sp[l]*dij/w[i,j]))
                }
             } 
           }
@@ -83,11 +85,12 @@ SDM <- function(...)
 	   	     d=st[[l]]            		  	
                  if(i!=j & is.element(labels[i],rownames(d)) & is.element(labels[j],colnames(d)) & is.element(labels[i],rownames(d_p)) & is.element(labels[j],colnames(d_p)))
                   {dij=d[rownames(d)==labels[i],colnames(d)==labels[j]]
-                   sum=sum-sp[l]*dij/w[i,j] 
+                   dijp=d_p[rownames(d_p)==labels[i],colnames(d_p)==labels[j]] 
+                   sum=sum-sp[l]*dij*dijp/w[i,j] 
 			 ipos=which(rownames(d)==labels[i])
-                   jpos=which(rownames(d)==labels[j]) 
-		       Q[p,astart[l]+ipos]=Q[p,astart[l]+ipos]-sp[l]/w[i,j]
-		       Q[p,astart[l]+jpos]=Q[p,astart[l]+jpos]-sp[l]/w[i,j]
+                   jpos=which(rownames(d)==labels[j])  
+		       Q[p,astart[l]+ipos]=Q[p,astart[l]+ipos]-sp[l]*dijp/w[i,j]
+		       Q[p,astart[l]+jpos]=Q[p,astart[l]+jpos]-sp[l]*dijp/w[i,j]
 		      }
                }
              }
@@ -122,8 +125,8 @@ SDM <- function(...)
  		  for(j in c(1:n))
               { 
                 if(i!=j & is.element(labels[j],rownames(dp)) & is.element(labels[i],rownames(d)) & is.element(labels[j],colnames(d)))
-                 { dij=d[rownames(d)==labels[i],colnames(d)==labels[j]]                  
-			 Q[r,l]=Q[r,l]+(dij-sp[l]*dij/w[i,j])
+                 { dij=d[rownames(d)==labels[i],colnames(d)==labels[j]]                 
+			 Q[r,l]=Q[r,l]-sp[l]*dij/w[i,j]
 			 ipos=which(rownames(d)==labels[i])
                    jpos=which(rownames(d)==labels[j]) 
 			 Q[r,astart[l]+ipos]=Q[r,astart[l]+ipos]-sp[l]/w[i,j]
@@ -134,7 +137,7 @@ SDM <- function(...)
           }	
 	  if(p<k)Q[r,]=Q[r,]*sp[p]
         Q[r,miustart+i]=1
-        if(p<k)Q[r,niustart+p+1]=1
+        if(p<k)Q[r,niustart+p]=1
        }        
     }
   } 
@@ -166,7 +169,6 @@ SDM <- function(...)
     }
   }
  a <- solve(Q,col)
-
  for(i in c(1:n))
   for(j in c(1:n))
    { sum=0
