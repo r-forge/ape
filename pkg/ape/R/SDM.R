@@ -168,7 +168,7 @@ SDM <- function(...)
  	}
     }
   }
- a <- solve(Q,col)
+ a <- solve(Q,col,1e-19)
  for(i in c(1:n))
   for(j in c(1:n))
    { sum=0
