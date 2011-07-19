@@ -1,16 +1,10 @@
-bionjs <- function(...)
+bionjs <- function(X,fs=15)
 {   
-    st=list(...)
-    X=st[[1]]
-    fs=15
-    if(length(st)>1)
-       {
-        fs=st[[2]]       
-       }
-
+   
     if (is.matrix(X)) X <- as.dist(X)
     X[is.na(X)]=-1
     X[X<0]=-1	
+    X[is.nan(X)]=-1
     N <- attr(X, "Size")
     labels <- attr(X, "Labels")
     if (is.null(labels)) labels <- as.character(1:N)
