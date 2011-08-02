@@ -56,7 +56,7 @@ uint8_t* setdiff(uint8_t* x,uint8_t *y,int nrow)//x-y
     return ret;
   }
 
-void treePop(int* splits, int* ncolp,int* np, int* ed1, int* ed2, double* edLen)
+void treePop(int* splits, double* w,int* ncolp,int* np, int* ed1, int* ed2, double* edLen)
   {
     int n=*np;
     int ncol=*ncolp;
@@ -205,7 +205,7 @@ void treePop(int* splits, int* ncolp,int* np, int* ed1, int* ed2, double* edLen)
              }
              Rprintf("gn=%i\n",gn);
              ed2[numEdges]=gn;
-             edLen[numEdges]=1;
+             edLen[numEdges]=w[ind[i]];
              numEdges++;
              uint8_t* sdd=setdiff(vl,sp,nrow);
              for(ii=0;ii<nrow;ii++)
