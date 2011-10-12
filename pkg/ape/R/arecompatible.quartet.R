@@ -16,7 +16,5 @@ arecompatible.quartet <-function(x,...)
   ret=0
   ans<-.C("quartComp",as.integer(intq),as.double(w),as.integer(nrow(mf)),as.integer(n),as.integer(1))
   ret=ans[[5]]
-  print("ret") 
-  print(ret)
  ret 
 }

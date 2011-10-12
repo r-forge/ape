@@ -64,7 +64,7 @@ void treePop(int* splits, double* w,int* ncolp,int* np, int* ed1, int* ed2, doub
     uint8_t split[nrow][ncol];
     int i=0,j=0;
 
-    Rprintf("n=%i nrow=%i ncol=%i\n",n,nrow,ncol);
+    /*Rprintf("n=%i nrow=%i ncol=%i\n",n,nrow,ncol);
     Rprintf("got\n");
     for(i=0;i<ncol;i++)
     {
@@ -73,7 +73,7 @@ void treePop(int* splits, double* w,int* ncolp,int* np, int* ed1, int* ed2, doub
           Rprintf("%i ",splits[i*nrow+j]);
        }
      Rprintf("\n");
-    }
+    }*/
     
     for(i=0;i<ncol;i++)
     {
@@ -82,7 +82,7 @@ void treePop(int* splits, double* w,int* ncolp,int* np, int* ed1, int* ed2, doub
          split[j][i]=(uint8_t)splits[i*nrow+j];
        }
     }
-    Rprintf("short-ed\n");
+    /*Rprintf("short-ed\n");
     for(i=0;i<nrow;i++)
     {
       for(j=0;j<ncol;j++)
@@ -91,7 +91,7 @@ void treePop(int* splits, double* w,int* ncolp,int* np, int* ed1, int* ed2, doub
          Rprintf("\n");
        }
       Rprintf("\n");
-    }
+    }*/
     
 
    uint8_t vlabs[2*n-1][nrow];
@@ -108,15 +108,15 @@ void treePop(int* splits, double* w,int* ncolp,int* np, int* ed1, int* ed2, doub
     {
       int sum=0;
       for(j=0;j<nrow-1;j++)
-       { Rprintf("countbits(%i)=%i ",split[j][i],count_bits(split[j][i]));
+       { //Rprintf("countbits(%i)=%i ",split[j][i],count_bits(split[j][i]));
          sum+=count_bits(split[j][i]);
        }
       uint8_t bt=split[nrow-1][i];
       bt&=msk;
-      Rprintf("countbits(%i)=%i ",bt,count_bits(bt));
+      //Rprintf("countbits(%i)=%i ",bt,count_bits(bt));
       sum+=count_bits(bt);
-      Rprintf("bit_count[%i]=%i ",i,sum);
-      Rprintf("\n");
+     // Rprintf("bit_count[%i]=%i ",i,sum);
+      //Rprintf("\n");
       if(sum>n/2)
        {
          for(j=0;j<nrow;j++)
@@ -153,49 +153,51 @@ void treePop(int* splits, double* w,int* ncolp,int* np, int* ed1, int* ed2, doub
    int numEdges=0;
    for(i=0;i<ncol;i++)
     {  int ii=0;
-       Rprintf("split %i\n",i);
+       //Rprintf("split %i\n",i);
        uint8_t sp[nrow];
        for(ii=0;ii<nrow;ii++)
-         {
+         {//copy split into sp
           sp[ii]=split[ii][ind[i]];
          }
+      //search for node whose labellings are a superset of the current split
       for(j=n+1;j<=nNodes;j++)
        {
           uint8_t vl[nrow];
           for(ii=0;ii<nrow;ii++)
-            {
+            {//copy vertex labeling into vl
               vl[ii]=vlabs[j][ii];
             }
-         int sw=0;
+         int sw=0;//print current split
          for(ii=0;ii<nrow;ii++)
            {
-             Rprintf("sp[%i]= ",ii);
-             printbits(sp[ii]);
+             //Rprintf("sp[%i]= ",ii);
+            //printbits(sp[ii]);
            }
-         Rprintf("\n");
+         //Rprintf("\n");//print current label
          for(ii=0;ii<nrow;ii++)
            {
-             Rprintf("vl[%i]= ",ii);
-             printbits(vl[ii]);
+            // Rprintf("vl[%i]= ",ii);
+           //  printbits(vl[ii]);
            }
-         Rprintf("\n");
+         //Rprintf("\n");
          uint8_t* sd=setdiff(sp,vl,nrow);
-         for(ii=0;ii<nrow-1;ii++)
-           { Rprintf("sd[%i]=%i ",ii,sd[ii]);
+         //print the setdifference
+         for(ii=0;ii<nrow/*-1*/;ii++)
+           { //Rprintf("sd[%i]=%i ",ii,sd[ii]);
              if(sd[ii]!=0)sw=1;
            }
-         Rprintf("\n");
+        // Rprintf("\n");
          
          sd[nrow-1]&=msk;
-         Rprintf("sd[%i]=%i ",nrow-1,sd[nrow-1]);
+         //Rprintf("sd[%i]=%i ",nrow-1,sd[nrow-1]);
          if(sd[nrow-1]!=0)sw=1;
-         if(sw==0)//setdiff==0
-          {  Rprintf("vertex %i",j);
+         if(sw==0)//setdiff==0, so we split vertex j
+          { // Rprintf("vertex %i",j);
              ed1[numEdges]=j;
              
              int gn=-1;
-             Rprintf("bitt_count[%i]=%i\n",i,bitt_count[i]);
-             if(bitt_count[i]>=2)
+            // Rprintf("bitt_count[%i]=%i\n",i,bitt_count[i]);
+             if(bitt_count[i]>=2)//if not trivial split
              {nNodes++;
               gn=nNodes;
              }
@@ -203,26 +205,28 @@ void treePop(int* splits, double* w,int* ncolp,int* np, int* ed1, int* ed2, doub
              {
                gn=lsb(sp);
              }
-             Rprintf("gn=%i\n",gn);
+            // Rprintf("gn=%i\n",gn);
              ed2[numEdges]=gn;
              edLen[numEdges]=w[ind[i]];
              numEdges++;
              uint8_t* sdd=setdiff(vl,sp,nrow);
-             for(ii=0;ii<nrow;ii++)
+             for(ii=0;ii<nrow;ii++)//label current vertex byset difference
+                                   //and new vertex by actual split
                {
                  vlabs[j][ii]=sdd[ii];
                  vlabs[gn][ii]=sp[ii];
                }
-             Rprintf("new v\n");
+             //print new labels
+            // Rprintf("new v\n");
              int jj=0;
              for(ii=1;ii<=nNodes;ii++)
-              {Rprintf("node %i : ",ii);
+              {//Rprintf("node %i : ",ii);
                for(jj=0;jj<nrow;jj++)
                 {
-                  printbits(vlabs[ii][jj]);
-                  Rprintf(" ");
+                  //printbits(vlabs[ii][jj]);
+                 // Rprintf(" ");
                 }
-               Rprintf("\n");
+              // Rprintf("\n");
               }
              break;
           }

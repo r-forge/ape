@@ -33,27 +33,27 @@ void mvr(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_lengt
 
 	while (n > 3) {
 
-                for(i=1;i<n;i++)
+                /*for(i=1;i<n;i++)
                   {
                     for(j=i+1;j<=n;j++)
                       {
                         Rprintf("d[%i,%i]=%f ",i,j,D[give_index(i,j,n)]);
                       }
                     Rprintf("\n");
-                  }
+                  }*/
                 
 		for (i = 1; i <= n; i++)
                 {double sum=0;
                   for( j=1;j<=n;j++)
                    {if(i==j)continue;
-                     Rprintf("index(%i,%i)=%i\n",i,j,give_index(i,j,n));
-                     Rprintf("D[%i,%i]=%f\n",i,j,D[give_index(i,j,n)]);
+                     //Rprintf("index(%i,%i)=%i\n",i,j,give_index(i,j,n));
+                     //Rprintf("D[%i,%i]=%f\n",i,j,D[give_index(i,j,n)]);
                      sum+=D[give_index(i,j,n)];
                    }
                 S[i]=sum;
-                Rprintf("\n");
-                Rprintf("S[%i]=%f\n",i,S[i]);
-                Rprintf("\n");
+                //Rprintf("\n");
+                //Rprintf("S[%i]=%f\n",i,S[i]);
+               // Rprintf("\n");
                 }
 		ij = 0;
 		smallest_S = 1e50;
@@ -62,12 +62,12 @@ void mvr(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_lengt
 			for (j = i + 1; j <= n; j++) {
 
 				A = B*D[ij] - S[i] - S[j];
-                                Rprintf("D[ij]=%f\n",D[ij]);
+                               /* Rprintf("D[ij]=%f\n",D[ij]);
                                 Rprintf("S[%i]=%f\n",i,S[i]);
                                 Rprintf("S[%i]=%f\n",j,S[j]);
                                 Rprintf("B=%f\n",B);
                                 Rprintf("A=%f\n",(B*D[ij] - S[i] - S[j]));
-                                Rprintf("Q[%i,%i]=%f\n",i,j,A);
+                                Rprintf("Q[%i,%i]=%f\n",i,j,A);*/
 				if (A < smallest_S) {
 					OTU1 = i;
 					OTU2 = j;
@@ -78,7 +78,7 @@ void mvr(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_lengt
 			}
 		}
 
-                Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
+                /*Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
                 
                 for(i=1;i<n;i++)
                   {
@@ -96,7 +96,7 @@ void mvr(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_lengt
                         Rprintf("v[%i,%i]=%f ",i,j,v[give_index(i,j,n)]);
                       }
                     Rprintf("\n");
-                  }
+                  }*/
                 
 		edge2[k] = otu_label[OTU1];
 		edge2[k + 1] = otu_label[OTU2];
@@ -111,7 +111,7 @@ void mvr(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_lengt
                 for(i=1;i<=n;i++)
                  {
                    if(i == OTU1 || i==OTU2)continue;
-                   Rprintf("index(%i,%i)=%i index(%i,%i)=%i",i,OTU1,give_index(i,OTU1,n),i,OTU2,give_index(i,OTU2,n));
+                   //Rprintf("index(%i,%i)=%i index(%i,%i)=%i",i,OTU1,give_index(i,OTU1,n),i,OTU2,give_index(i,OTU2,n));
                    miuSum+=(1/(v[give_index(i,OTU1,n)]+v[give_index(i,OTU2,n)]));
                  }                
                 miuSum=1/miuSum;

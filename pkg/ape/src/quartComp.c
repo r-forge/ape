@@ -26,14 +26,14 @@ void quartComp(int* quarts, double* w,int*mp, int*np,int* ret)
     }  
   }
 
-  for(i=0;i<m;i++)
+  /*for(i=0;i<m;i++)
   {
    for(j=0;j<4;j++)
     {
       Rprintf("%i ",qt[i][j]);
     }
    Rprintf("\n");
-  }
+  }*/
 
  for(a=1;a<=n;a++)
   {
@@ -62,7 +62,7 @@ void quartComp(int* quarts, double* w,int*mp, int*np,int* ret)
                             }
                        }
                   }
-              if(n0<2){Rprintf("first condition\n");*ret=0;return;}
+              if(n0<2){/*Rprintf("first condition\n");*/*ret=0;return;}
              for(e=1;e<=n;e++)
               {
                 if(a!=e && b!=e && c!=e && d!=e)
@@ -104,7 +104,7 @@ void quartComp(int* quarts, double* w,int*mp, int*np,int* ret)
                   if(p1!=-1 && p2!=-1 && p3!=-1 && w[p1]>0 && w[p2]>0)
                     {
                       if(w[p3]!=(w[p1]+w[p2]))
-                        { Rprintf("second condition for taxa a=%i b=%i c=%i d=%i e=%i p1=%i p2=%i p3=%i\n",a,b,c,d,e,p1,p2,p3);
+                        { //Rprintf("second condition for taxa a=%i b=%i c=%i d=%i e=%i p1=%i p2=%i p3=%i\n",a,b,c,d,e,p1,p2,p3);
 			  *ret=0;
                           return;
                         }
@@ -112,7 +112,7 @@ void quartComp(int* quarts, double* w,int*mp, int*np,int* ret)
                   if(p1!=-1 && p4!=-1 && p5!=-1 && w[p1]>w[p4] && w[p4]>0)
                     {
                       if(w[p5]!=(w[p1]-w[p4]))
-                        {  Rprintf("third condition for taxa a=%i b=%i c=%i d=%i e=%i\n",a,b,c,d,e);
+                        {  //Rprintf("third condition for taxa a=%i b=%i c=%i d=%i e=%i\n",a,b,c,d,e);
                            *ret=0;
                            return;
                         }
@@ -120,8 +120,8 @@ void quartComp(int* quarts, double* w,int*mp, int*np,int* ret)
                    if(p1!=-1 && p3!=-1 && p4!=-1 && p5!=-1 && p6!=-1 && w[p1]>0)
                     {
                      if(((w[p4]<0 || w[p3]<0) && (w[p5]<0 || w[p6]<0)))
-                       {Rprintf("fourth condition for taxa a=%i b=%i c=%i d=%i e=%i p4=%i p3=%i p1=%i p5=%i p6=%i\n",a,b,c,d,e,p4,p3,p1,p5,p6);
-                        Rprintf("w[p4]=%f w[p3]=%f w[p5]=%f w[p6]=%f\n",w[p4],w[p3],w[p5],w[p6]);
+                       {//Rprintf("fourth condition for taxa a=%i b=%i c=%i d=%i e=%i p4=%i p3=%i p1=%i p5=%i p6=%i\n",a,b,c,d,e,p4,p3,p1,p5,p6);
+                        //Rprintf("w[p4]=%f w[p3]=%f w[p5]=%f w[p6]=%f\n",w[p4],w[p3],w[p5],w[p6]);
                         *ret=0;
                         return;
                        }

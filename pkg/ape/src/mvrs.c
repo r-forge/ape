@@ -66,7 +66,7 @@ void mvrs(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_leng
              if(k==i || k==j)
                {
                   s[give_index(i,j,n)]++;
-                  Rprintf("%i",s[give_index(i,j,n)]);
+                 // Rprintf("%i",s[give_index(i,j,n)]);
                   
                   continue;
                }
@@ -75,29 +75,29 @@ void mvrs(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_leng
               s[give_index(i,j,n)]++;
               R[give_index(i,j,n)]+=D[give_index(i,k,n)];
               R[give_index(i,j,n)]+=D[give_index(j,k,n)];
-              Rprintf("%i",s[give_index(i,j,n)]);
-              Rprintf("%f",R[give_index(i,j,n)]);
+              //Rprintf("%i",s[give_index(i,j,n)]);
+             // Rprintf("%f",R[give_index(i,j,n)]);
               
            }
          }
          
-        for(i=1;i<n;i++)
+       /* for(i=1;i<n;i++)
                   {
                     for(j=i+1;j<=n;j++)
                       {
                         Rprintf("R[%i,%i]=%f ",i,j,R[give_index(i,j,n)]);
                       }
                     Rprintf("\n");
-                  }
+                  }*/
 
-                for(i=1;i<n;i++)
+                /*for(i=1;i<n;i++)
                   {
                     for(j=i+1;j<=n;j++)
                       {
                         Rprintf("s[%i,%i]=%i ",i,j,s[give_index(i,j,n)]);
                       }
                     Rprintf("\n");
-                  }       
+                  }*/
         k=0;
         int sw=1;//if 1 then incomplete        
 	while (n > 3) {
@@ -124,17 +124,17 @@ void mvrs(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_leng
                         for (i=1;i<=n;i++)
                          for(j=1;j<=n;j++)
                            {if(i==j)continue;
-                             Rprintf("give_index(%i,%i)=%i\n",i,j,give_index(i,j,n));
-                             Rprintf("D[%i,%i]=%f\n",i,j,D[give_index(i,j,n)]);
+                             //Rprintf("give_index(%i,%i)=%i\n",i,j,give_index(i,j,n));
+                             //Rprintf("D[%i,%i]=%f\n",i,j,D[give_index(i,j,n)]);
                              S[i]+=D[give_index(i,j,n)];
                            }
                         B=n-2;
-                        Rprintf("n=%i,B=%f",n,B);
+                        //Rprintf("n=%i,B=%f",n,B);
 		        for (i = 1; i < n; i++) {
 			 for (j = i + 1; j <= n; j++) {
-                             Rprintf("S[%i]=%f, S[%i]=%f, D[%i,%i]=%f, B=%f",i,S[i],j,S[j],i,j,D[give_index(i,j,n)],B);
+                             //Rprintf("S[%i]=%f, S[%i]=%f, D[%i,%i]=%f, B=%f",i,S[i],j,S[j],i,j,D[give_index(i,j,n)],B);
                                 A=S[i]+S[j]-B*D[give_index(i,j,n)];
-                                Rprintf("Q[%i,%i]=%f\n",i,j,A);
+                                //Rprintf("Q[%i,%i]=%f\n",i,j,A);
 				if (A > smallest_S) {
 					OTU1 = i;
 					OTU2 = j;
@@ -148,9 +148,9 @@ void mvrs(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_leng
                 if(s[give_index(OTU1,OTU2,n)]<=2)
                   {error("distance information insufficient to construct a tree, leaves %i and %i isolated from tree",OTU1,OTU2);
                   }
-                Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
+                //Rprintf("agglomerating %i and %i, Q=%f \n",OTU1,OTU2,smallest_S);
 
-                for(i=1;i<n;i++)
+               /* for(i=1;i<n;i++)
                   {
                     for(j=i+1;j<=n;j++)
                       {
@@ -175,7 +175,7 @@ void mvrs(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_leng
                         Rprintf("d[%i,%i]=%f ",i,j,D[give_index(i,j,n)]);
                       }
                     Rprintf("\n");
-                  }
+                  }*/
                 
                 //update R and S, only if matrix still incomplete
                 if(sw==1)
@@ -207,7 +207,7 @@ void mvrs(double *D, double* v,int *N, int *edge1, int *edge2, double *edge_leng
                  {
                    if(i == OTU1 || i==OTU2)continue;
                    if(D[give_index(i,OTU1,n)]==-1 || D[give_index(i,OTU2,n)]==-1)continue;
-                   Rprintf("index(%i,%i)=%i index(%i,%i)=%i",i,OTU1,give_index(i,OTU1,n),i,OTU2,give_index(i,OTU2,n));
+                   //Rprintf("index(%i,%i)=%i index(%i,%i)=%i",i,OTU1,give_index(i,OTU1,n),i,OTU2,give_index(i,OTU2,n));
                    miuSum+=(1/(v[give_index(i,OTU1,n)]+v[give_index(i,OTU2,n)]));
                  }
                 miuSum=1/miuSum;
